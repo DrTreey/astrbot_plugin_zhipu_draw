@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 插件运行时产物
+data/
+*.log
+
+# 编辑器
+.idea/
+.vscode/
+.DS_Store

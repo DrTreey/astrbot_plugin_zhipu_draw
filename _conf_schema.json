@@ -1,0 +1,62 @@
+{
+  "api_key": {
+    "description": "智谱 API Key",
+    "type": "string",
+    "hint": "在 bigmodel.cn 控制台 → API Keys 创建，格式形如 32位ID.16位密钥",
+    "default": ""
+  },
+  "model": {
+    "description": "绘图模型",
+    "type": "string",
+    "hint": "cogview-3-flash 免费；cogview-4 / cogview-4-250304 效果更好但要付费",
+    "default": "cogview-3-flash"
+  },
+  "size": {
+    "description": "图片尺寸",
+    "type": "string",
+    "hint": "可选 1024x1024、768x1344、864x1152、1344x768、1152x864、1440x720、720x1440",
+    "default": "1024x1024"
+  },
+  "quality": {
+    "description": "画质（仅 cogview-4 生效）",
+    "type": "string",
+    "hint": "standard 标准 / hd 高清",
+    "default": "standard"
+  },
+  "timeout": {
+    "description": "单次请求超时（秒）",
+    "type": "int",
+    "hint": "网络慢可以调到 180",
+    "default": 120
+  },
+  "allow_auto_draw": {
+    "description": "允许 AI 在聊天中自动配图",
+    "type": "bool",
+    "hint": "关闭后只能手动发送 /画图",
+    "default": true
+  },
+  "cooldown_seconds": {
+    "description": "同一会话的冷却时间（秒）",
+    "type": "int",
+    "hint": "0 表示不限制",
+    "default": 10
+  },
+  "max_concurrency": {
+    "description": "同时进行中的画图任务上限",
+    "type": "int",
+    "hint": "免费接口并发有限，建议 1-2",
+    "default": 2
+  },
+  "max_keep_files": {
+    "description": "本地最多保留的图片数量",
+    "type": "int",
+    "hint": "超出后按时间删除最旧的，避免占满磁盘",
+    "default": 200
+  },
+  "save_dir": {
+    "description": "图片保存目录",
+    "type": "string",
+    "hint": "一般不用改，自动清理只作用于这个目录",
+    "default": "/AstrBot/data/plugin_data/astrbot_plugin_zhipu_draw"
+  }
+}
