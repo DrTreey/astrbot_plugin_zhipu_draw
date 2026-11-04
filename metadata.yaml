@@ -3,7 +3,7 @@ display_name: 智谱画图 (Zhipu Draw)
 short_desc: 用智谱 CogView 免费画图，支持 /画图 指令与 AI 自动配图，无需显卡和 API 中转。
 desc: 接入智谱开放平台的 CogView-3-Flash 免费绘图模型。支持手动 /画图 指令，也注册了 generate_image 工具，让 Bot 在聊天里自己判断什么时候该画一张图。内置并发限制、冷却时间、错误码提示和旧图清理，支持用 AstrBot 里已配置的对话模型自动润色提示词（可关、可选模型），同时内置尺寸校验，不会因为畸形参数打崩接口。
 help: /画图 一只橘猫趴在窗台上晒太阳，水彩画风 —— 也可以直接在聊天里说「帮我画一只……」，Bot 会自己调用画图工具。
-version: v1.1.0
+version: v1.1.1
 author: Tree
 repo: https://github.com/DrTreey/astrbot_plugin_zhipu_draw
 astrbot_version: ">=4.9.0,<5"
