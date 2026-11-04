@@ -22,6 +22,17 @@ from astrbot.core.star.filter.command import GreedyStr
 
 API_URL = "https://open.bigmodel.cn/api/paas/v4/images/generations"
 
+# 润色用的系统提示词
+ENHANCE_SYSTEM_PROMPT = """你是绘画提示词工程师。把用户的一句话扩写成一段适合 AI 绘画的中文描述。
+
+规则：
+- 只输出描述本身，不要解释、不要引号、不要编号、不要 markdown、不要「好的」这类开场白
+- 补全主体特征、动作、场景、光线、构图、画风、色调
+- 用户指定的元素和画风必须保留，不要改变主题
+- 控制在 120 字以内，用逗号分隔的短语堆叠，不要写完整句子
+- 如果原文已经足够具体，直接原样返回
+"""
+
 # 智谱官方允许的尺寸
 SIZE_CHOICES = (
     "1024x1024",
@@ -64,8 +75,8 @@ def _guess_ext(raw: bytes) -> str:
     "astrbot_plugin_zhipu_draw",
     "Tree",
     "用智谱 CogView 免费画图：/画图 指令 + AI 自动配图，无需显卡、无需中转。",
-    "1.0.0",
-    "https://github.com/Tree/astrbot_plugin_zhipu_draw",
+    "1.1.0",
+    "https://github.com/DrTreey/astrbot_plugin_zhipu_draw",
 )
 class ZhipuDraw(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
@@ -137,6 +148,78 @@ class ZhipuDraw(Star):
         if isinstance(value, str):
             return value.strip().lower() not in ("false", "0", "no", "off", "")
         return bool(value)
+
+    # ---------- 提示词润色 ----------
+
+    @property
+    def _enhance_cfg(self) -> dict:
+        cfg = self.config.get("prompt_enhance")
+        return cfg if isinstance(cfg, dict) else {}
+
+    @property
+    def enhance_enabled(self) -> bool:
+        value = self._enhance_cfg.get("enable", True)
+        if isinstance(value, str):
+            return value.strip().lower() not in ("false", "0", "no", "off", "")
+        return bool(value)
+
+    @property
+    def enhance_provider_id(self) -> str:
+        return str(self._enhance_cfg.get("provider_id", "") or "").strip()
+
+    @property
+    def enhance_min_length(self) -> int:
+        try:
+            return max(0, int(self._enhance_cfg.get("min_length", 60)))
+        except (TypeError, ValueError):
+            return 60
+
+    @property
+    def enhance_timeout(self) -> int:
+        try:
+            return max(5, int(self._enhance_cfg.get("timeout", 20)))
+        except (TypeError, ValueError):
+            return 20
+
+    async def _enhance(self, raw: str, umo: str = "") -> str:
+        """把短描述交给 LLM 扩写；任何环节出问题都退回原始描述。"""
+        if not self.enhance_enabled:
+            return raw
+        if len(raw) >= self.enhance_min_length:
+            return raw
+        try:
+            if self.enhance_provider_id:
+                coro = self.context.llm_generate(
+                    chat_provider_id=self.enhance_provider_id,
+                    prompt=raw,
+                    system_prompt=ENHANCE_SYSTEM_PROMPT,
+                    contexts=[],
+                )
+            else:
+                provider = self.context.get_using_provider(umo or None)
+                if provider is None:
+                    logger.warning("[zhipu_draw] 找不到可用的对话模型，跳过润色")
+                    return raw
+                coro = provider.text_chat(
+                    prompt=raw,
+                    system_prompt=ENHANCE_SYSTEM_PROMPT,
+                    contexts=[],
+                )
+            resp = await asyncio.wait_for(coro, timeout=self.enhance_timeout)
+        except asyncio.TimeoutError:
+            logger.warning(f"[zhipu_draw] 润色超时（{self.enhance_timeout}s），直接用原描述")
+            return raw
+        except Exception as exc:  # noqa: BLE001 - 润色失败不该影响出图
+            logger.warning(f"[zhipu_draw] 润色失败：{exc}")
+            return raw
+
+        text = (getattr(resp, "completion_text", "") or "").strip()
+        text = text.strip("\"'「」“”*` \n")
+        text = " ".join(text.split())
+        if not text or len(text) > 500:
+            return raw
+        logger.info(f"[zhipu_draw] 润色：{raw} → {text}")
+        return text
 
     # ---------- 会话 ----------
 
@@ -266,8 +349,10 @@ class ZhipuDraw(Star):
             return
         key = event.unified_msg_origin
         try:
-            yield event.plain_result(f"在画了：{text}")
-            path = await self._generate(text, key)
+            refined = await self._enhance(text, key)
+            hint = f"在画了：{refined}" if refined != text else f"在画了：{text}"
+            yield event.plain_result(hint)
+            path = await self._generate(refined, key)
             yield event.image_result(path)
         except Exception as exc:  # noqa: BLE001 - 要把失败原因告诉用户
             logger.error(f"[zhipu_draw] 画图失败：{exc}")
@@ -288,9 +373,10 @@ class ZhipuDraw(Star):
         if not text:
             return "缺少画面描述，无法作画。"
         try:
-            path = await self._generate(text, event.unified_msg_origin)
+            refined = await self._enhance(text, event.unified_msg_origin)
+            path = await self._generate(refined, event.unified_msg_origin)
         except Exception as exc:  # noqa: BLE001
             logger.error(f"[zhipu_draw] 工具调用失败：{exc}")
             return f"画图失败：{exc}"
         await event.send(MessageChain().file_image(path))
-        return f"已按描述画好并发送给用户：{text}"
+        return f"已按描述画好并发送给用户：{refined}"

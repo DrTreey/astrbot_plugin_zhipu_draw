@@ -35,6 +35,7 @@
 
 - `/画图 一只橘猫趴在窗台上晒太阳，水彩风` —— 手动出图
 - 聊天里直接说「帮我画一只柴犬」—— Bot 判断该画时自己调用 `generate_image` 工具，把图画出来再接着跟你聊
+- **自动润色** —— 你只说「画只猫」，插件先让对话模型把它扩写成带主体、场景、光线、画风的描述，再送去画。用的模型从 AstrBot 已配置的提供商里选，也可以一键关掉
 
 ![示例：赛博朋克柴犬](docs/preview.jpg)
 
@@ -76,6 +77,17 @@ git clone https://github.com/DrTreey/astrbot_plugin_zhipu_draw.git
 | `max_concurrency` | `2` | 同时进行中的画图任务上限 |
 | `max_keep_files` | `200` | 本地图片保留数量，超出删最旧的 |
 | `save_dir` | `plugin_data/astrbot_plugin_zhipu_draw` | 图片存放目录 |
+
+### 提示词润色（`prompt_enhance`）
+
+| 配置项 | 默认值 | 说明 |
+|---|---|---|
+| `enable` | `true` | 是否启用自动润色 |
+| `provider_id` | 空 | 用哪个模型润色，从 AstrBot 已配置的提供商里选；留空用当前默认对话模型 |
+| `min_length` | `60` | 描述短于这个字数才润色，已经写得很细就不动 |
+| `timeout` | `20` | 润色超时（秒），超时直接用原描述画 |
+
+润色失败、超时、模型返回空，都会静默退回原始描述 —— 不会因为它多等半天或者画不出来。
 
 ## 使用
 

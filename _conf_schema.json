@@ -29,6 +29,38 @@
     "hint": "网络慢可以调到 180",
     "default": 120
   },
+  "prompt_enhance": {
+    "description": "提示词润色",
+    "type": "object",
+    "hint": "用 AstrBot 里已配置的对话模型，把「画只猫」这类短描述扩写成画面细节丰富的提示词，出图质量明显更好",
+    "items": {
+      "enable": {
+        "description": "启用自动润色",
+        "type": "bool",
+        "hint": "开启后每次画图会先用一次 LLM 改写描述，多花 3-10 秒",
+        "default": true
+      },
+      "provider_id": {
+        "description": "润色用的模型提供商",
+        "type": "string",
+        "_special": "select_provider",
+        "hint": "留空则用当前默认对话模型；建议选一个便宜、快的",
+        "default": ""
+      },
+      "min_length": {
+        "description": "少于多少字才润色",
+        "type": "int",
+        "hint": "用户描述已经很长（超过这个字数）时不再改写，避免画蛇添足",
+        "default": 60
+      },
+      "timeout": {
+        "description": "润色超时（秒）",
+        "type": "int",
+        "hint": "超时就直接用用户的原始描述画，不耽误出图",
+        "default": 20
+      }
+    }
+  },
   "allow_auto_draw": {
     "description": "允许 AI 在聊天中自动配图",
     "type": "bool",
