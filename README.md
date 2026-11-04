@@ -5,6 +5,8 @@
 - `/画图 一只橘猫趴在窗台上晒太阳，水彩风` —— 手动出图
 - 聊天里直接说「帮我画一只柴犬」—— Bot 判断该画时自己调用 `generate_image` 工具
 
+![示例：赛博朋克柴犬](docs/preview.jpg)
+
 ## 为什么用它
 
 | | 智谱 CogView-3-Flash | 本地 SD / ComfyUI | 各类逆向接口 |
@@ -26,7 +28,7 @@
 
 ```bash
 cd /AstrBot/data/plugins
-git clone https://github.com/Tree/astrbot_plugin_zhipu_draw.git
+git clone https://github.com/DrTreey/astrbot_plugin_zhipu_draw.git
 ```
 
 装完重启 AstrBot。

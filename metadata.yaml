@@ -5,7 +5,7 @@ desc: 接入智谱开放平台的 CogView-3-Flash 免费绘图模型。支持手
 help: /画图 一只橘猫趴在窗台上晒太阳，水彩画风 —— 也可以直接在聊天里说「帮我画一只……」，Bot 会自己调用画图工具。
 version: v1.0.0
 author: Tree
-repo: https://github.com/Tree/astrbot_plugin_zhipu_draw
+repo: https://github.com/DrTreey/astrbot_plugin_zhipu_draw
 astrbot_version: ">=4.9.0,<5"
 support_platforms:
   - aiocqhttp
